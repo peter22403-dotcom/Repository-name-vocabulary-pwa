@@ -94,7 +94,7 @@
         }
         .word-item {
             display: grid;
-            grid-template-columns: 30px minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-columns: 30px minmax(0, 1fr) 42px minmax(0, 1fr);
             gap: 8px;
             align-items: center;
             padding: 8px;
@@ -119,6 +119,24 @@
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+        .pronunciation-button {
+            width: 42px;
+            min-width: 42px;
+            height: 40px;
+            margin: 0;
+            padding: 0;
+            border-radius: 6px;
+            font-size: 1.05em;
+            line-height: 1;
+            background: #4caf50;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pronunciation-button:hover {
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.35);
         }
         .daily-confirm {
             display: flex;
@@ -304,10 +322,17 @@
                 font-size: 1.05em;
             }
             .word-item {
-                grid-template-columns: 28px minmax(0, 1fr);
+                grid-template-columns: 28px minmax(0, 1fr) 42px;
             }
-            .word-item input[type="text"] {
+            .word-item input[id*="_word"] {
                 grid-column: 2;
+            }
+            .pronunciation-button {
+                grid-column: 3;
+                width: 42px;
+            }
+            .word-item input[id*="_chinese"] {
+                grid-column: 2 / 4;
             }
             button {
                 width: 100%;
@@ -954,6 +979,7 @@
             
             // 初始生成週次表格
             generateWeekDays(monday);
+            setupPronunciationButtons();
             
             // 嘗試載入儲存的資料
             await loadData();
@@ -987,6 +1013,43 @@
                     dateElement.innerText = formattedDate;
                 }
             });
+        }
+
+        function setupPronunciationButtons() {
+            document.querySelectorAll('.word-item').forEach(item => {
+                const englishInput = item.querySelector('input[id*="_word"]');
+                if (!englishInput || item.querySelector('.pronunciation-button')) return;
+
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'pronunciation-button';
+                button.textContent = '🔊';
+                button.title = '播放英文發音';
+                button.setAttribute('aria-label', '播放英文發音');
+                button.addEventListener('click', () => speakEnglishWord(englishInput));
+                englishInput.insertAdjacentElement('afterend', button);
+            });
+        }
+
+        function speakEnglishWord(input) {
+            const word = input.value.trim();
+
+            if (!word) {
+                alert('請先輸入英文單字');
+                input.focus();
+                return;
+            }
+
+            if (!('speechSynthesis' in window)) {
+                alert('這個瀏覽器不支援英文發音，請改用 Safari 或 Chrome。');
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.85;
+            window.speechSynthesis.speak(utterance);
         }
 
         // 計算完成天數
@@ -1061,7 +1124,7 @@
         }
 
         function canUseMacServer() {
-            return window.location.protocol === 'http:' || window.location.protocol === 'https:';
+            return false;
         }
 
         function canUseGoogleSheets() {
@@ -1340,7 +1403,7 @@
             } else if (macSaved) {
                 alert('✅ 資料已儲存到 Mac！');
             } else if (localSaved) {
-                alert('✅ 資料已儲存在這台裝置。\n\n⚠️ 但沒有存到 Google Sheets 或 Mac。請確認雲端設定或 Mac 伺服器。');
+                alert('✅ 資料已儲存在這台裝置。\n\n⚠️ 但沒有存到 Google Sheets。請確認雲端設定。');
             } else {
                 alert('❌ 無法儲存\n\n請確認已選擇小朋友姓名，並檢查雲端設定。');
             }
@@ -1490,22 +1553,8 @@
                 console.log('Google Sheets 讀取失敗:', error);
             }
 
-            try {
-                const data = await withTimeout(loadFromMacServer(childName), 2500);
-                if (data) {
-                    applyLoadedData(data);
-                    showSaveStatus(`✅ 已從 Mac 載入：${childName}`);
-                    return;
-                }
-
-                if (showMissingMessage) {
-                    showSaveStatus(`尚未找到 ${childName} 的 Mac 儲存資料`);
-                }
-            } catch (error) {
-                console.log('Mac 讀取失敗:', error);
-                if (showMissingMessage) {
-                    showSaveStatus('⚠️ 無法從 Mac 載入，請確認 Mac 伺服器正在執行。', true);
-                }
+            if (showMissingMessage) {
+                showSaveStatus(`尚未找到 ${childName} 的 Google Sheets 儲存資料`);
             }
         }
 
@@ -1566,7 +1615,7 @@
                             btn.innerHTML = originalText;
                             btn.disabled = false;
                         }
-                        alert('❌ 沒有成功封存到 Google Sheets 或 Mac，所以不會清空資料。\n\n請確認雲端設定或 Mac 伺服器。');
+                        alert('❌ 沒有成功封存到 Google Sheets，所以不會清空資料。\n\n請確認雲端設定。');
                         return;
                     }
                 }

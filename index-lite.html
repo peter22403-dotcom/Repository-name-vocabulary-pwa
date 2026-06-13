@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>📚 每週背單字確認表｜省電版</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --ink: #18202f;
+      --muted: #647083;
+      --line: #dfe4ec;
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --green: #16803c;
+      --red: #c62828;
+      --amber: #b7791f;
+      --soft-blue: #eaf2ff;
+      --soft-green: #eaf8ef;
+      --soft-amber: #fff8e6;
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", sans-serif;
+      line-height: 1.45;
+    }
+
+    .app {
+      width: min(100%, 920px);
+      margin: 0 auto;
+      padding: 14px 12px 42px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      margin: 12px 0;
+    }
+
+    h1 {
+      font-size: 1.55rem;
+      margin: 8px 0 4px;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      font-size: .96rem;
+      margin: 0 0 10px;
+    }
+
+    label, .label {
+      display: block;
+      font-weight: 700;
+      margin: 8px 0 5px;
+    }
+
+    input, select, button {
+      font: inherit;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid rgba(37, 99, 235, .22);
+      border-color: var(--primary);
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .day-tabs {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .day-tab {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 12px;
+      padding: 9px 2px;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .day-tab.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .day-tab.done::after {
+      content: " ✓";
+      color: var(--green);
+    }
+
+    .day-tab.active.done::after { color: #fff; }
+
+    .day-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .day-title h2 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: .86rem;
+      font-weight: 800;
+      background: var(--soft-blue);
+      color: var(--primary-dark);
+      white-space: nowrap;
+    }
+
+    .word-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .word-row {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .word-row.warning {
+      border-color: #e6b44a;
+      background: #fffaf0;
+    }
+
+    .word-index {
+      color: var(--muted);
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .word-fields {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .speak-btn {
+      min-width: 46px;
+      height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--soft-blue);
+      color: var(--primary-dark);
+      font-size: 1.15rem;
+    }
+
+    .confirm-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 14px;
+      background: var(--soft-green);
+      border: 1px solid #c9ead4;
+    }
+
+    .confirm-line input { width: 24px; min-height: 24px; }
+    .confirm-line label { margin: 0; }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button {
+      min-height: 46px;
+      border: 0;
+      border-radius: 13px;
+      padding: 10px 12px;
+      font-weight: 900;
+      background: #e9edf5;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    button.primary { background: var(--primary); color: #fff; }
+    button.green { background: var(--green); color: #fff; }
+    button.amber { background: #f2b840; color: #2b2106; }
+    button.danger { background: #d43f3a; color: #fff; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+
+    .status {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--soft-blue);
+      color: var(--primary-dark);
+      font-weight: 800;
+      white-space: pre-wrap;
+    }
+
+    .status.error { background: #fff0f0; color: var(--red); }
+    .status.warn { background: var(--soft-amber); color: var(--amber); }
+    .status.ok { background: var(--soft-green); color: var(--green); }
+
+    .summary-list {
+      display: grid;
+      gap: 7px;
+      margin-top: 8px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .mom-only.locked {
+      display: none;
+    }
+
+    @media (max-width: 700px) {
+      .grid2 { grid-template-columns: 1fr; }
+      .word-fields { grid-template-columns: 1fr auto; }
+      .word-fields input.chinese { grid-column: 1 / -1; }
+      .buttons { grid-template-columns: 1fr; }
+      .day-tabs { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1>📚 每週背單字確認表</h1>
+    <p class="subtitle">省電版：一次只顯示一天，但 7 天都可補登、每天可存到 Google Sheet。</p>
+
+    <section class="card">
+      <div class="grid2">
+        <div>
+          <label for="childName">小朋友姓名</label>
+          <select id="childName">
+            <option value="">請選擇</option>
+            <option value="彭威翰">彭威翰</option>
+            <option value="彭恩宣">彭恩宣</option>
+            <option value="彭威朗">彭威朗</option>
+          </select>
+        </div>
+        <div>
+          <label for="startDate">週一日期</label>
+          <input id="startDate" type="date">
+        </div>
+        <div>
+          <label for="mamaName">媽媽 / 家長簽名</label>
+          <input id="mamaName" type="text" placeholder="請簽名" autocomplete="name">
+        </div>
+        <div>
+          <label for="allowance">零用錢 / 備註</label>
+          <input id="allowance" type="text" inputmode="decimal" placeholder="$">
+        </div>
+      </div>
+
+      <div class="day-tabs" id="dayTabs" aria-label="切換第幾天"></div>
+      <div id="saveStatus" class="status" aria-live="polite">請先選小朋友。可按「載入雲端」讀取 Google Sheet 資料。</div>
+    </section>
+
+    <section class="card" id="dayCard">
+      <div class="day-title">
+        <h2 id="dayHeading">第 1 天</h2>
+        <span class="badge" id="dayDateBadge">--/--</span>
+      </div>
+      <p class="small">英文欄位已開啟瀏覽器拼字檢查；儲存前會提醒空白、中文混入、重複單字。</p>
+      <div class="word-list" id="wordList"></div>
+
+      <div class="confirm-line">
+        <input id="dayConfirmed" type="checkbox">
+        <label for="dayConfirmed">✅ 今日完成背誦 / 家長已確認</label>
+      </div>
+      <label for="daySignature">今日簽名</label>
+      <input id="daySignature" type="text" placeholder="媽媽簽名或備註">
+
+      <div class="buttons">
+        <button class="primary" id="saveBtn">💾 儲存今日資料到 Google Sheet</button>
+        <button id="loadBtn">☁️ 載入雲端資料</button>
+        <button id="validateBtn">🔍 檢查今天資料</button>
+        <button id="momModeBtn">🔐 媽媽模式</button>
+      </div>
+    </section>
+
+    <section class="card mom-only locked" id="momPanel">
+      <div class="day-title">
+        <h2>媽媽模式 / 第七天結算</h2>
+        <span class="badge" id="completedBadge">完成 0 天</span>
+      </div>
+      <div id="weekSummary" class="summary-list"></div>
+      <div class="buttons">
+        <button class="green" id="settleBtn">📦 結算並封存到 Google Sheet</button>
+        <button class="amber" id="nextWeekBtn">➡️ 只切到下一週，不封存</button>
+        <button class="danger" id="clearBtn">🗑️ 清空本週畫面</button>
+        <button id="exitMomModeBtn">離開媽媽模式</button>
+      </div>
+      <p class="small">結算前會列出缺漏；你可以選擇補登或照目前完成天數封存。</p>
+    </section>
+  </main>
+
+  <script>
+    'use strict';
+
+    const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzPaV7yJHYEbXKHkdJkWnFUQ7h0l23AzNfa-eNEpXt4lEX6v0imXJ5fvoZKJqCRZc8rlw/exec';
+    const DAY_COUNT = 7;
+    const WORDS_PER_DAY = 10;
+    const STORAGE_KEY = 'vocabularyLiteData';
+    const MOM_PIN = '0000';
+
+    const dayNames = ['第1天', '第2天', '第3天', '第4天', '第5天', '第6天', '第7天'];
+    // 省電版離線常用字庫：只在「檢查 / 儲存」時使用，不會邊打邊查網路。
+    // 不在字庫不代表一定錯，只會提醒家長確認；課本特殊單字仍可儲存。
+    const COMMON_WORDS = new Set(`
+      a an the and or but if then this that these those I you he she it we they me him her us them my your his her its our their
+      is am are was were be been being have has had do does did can could will would shall should may might must need to of in on at by for from with about into over under between before after during without within through up down out off again very too so not no yes
+      one two three four five six seven eight nine ten first second third last next today tomorrow yesterday day week month year morning afternoon evening night time hour minute
+      apple banana orange lemon grape peach pear watermelon strawberry cherry tomato potato carrot onion corn rice bread cake cookie milk water juice tea coffee egg fish chicken beef pork soup salad cheese butter sugar salt
+      book pen pencil paper desk chair bag school teacher student class classroom homework lesson test exam quiz story page picture word sentence question answer english chinese math science music art sport game
+      cat dog bird fish horse cow pig sheep duck rabbit lion tiger elephant monkey bear panda giraffe zebra snake frog turtle mouse
+      family father mother mom dad brother sister grandpa grandma uncle aunt cousin baby child children friend boy girl man woman people person
+      house home room kitchen bathroom bedroom door window wall floor table sofa bed lamp garden park street city town country world
+      happy sad angry tired hungry thirsty sleepy scared excited bored busy quiet loud funny kind good bad big small long short tall high low hot cold warm cool new old young clean dirty easy hard fast slow
+      red blue green yellow black white brown purple pink orange gray color light dark
+      run walk jump swim fly sit stand sleep eat drink read write listen speak talk say tell ask answer look see watch hear smell taste touch play study learn teach help make take give get put open close start stop finish like love want know think feel find use bring buy sell pay live work try keep let leave come go turn move follow show
+      beautiful cute smart strong weak safe dangerous important different same right left correct wrong true false free full empty ready late early near far
+      sun moon star sky cloud rain wind snow fire earth sea river lake mountain tree flower grass leaf animal plant
+      Taiwan Japan China America England Monday Tuesday Wednesday Thursday Friday Saturday Sunday January February March April May June July August September October November December
+      hello hi goodbye thanks thank please sorry excuse welcome birthday holiday Christmas New Year
+      body head hair face eye ear nose mouth tooth teeth hand arm leg foot feet heart back stomach
+      shirt pants shoes socks hat coat dress skirt uniform glasses watch umbrella
+      bus car train bike bicycle airplane ship boat taxi station airport road bridge store shop market restaurant hospital library museum zoo
+      phone computer tablet keyboard screen internet website email camera photo video song movie
+      money dollar price cheap expensive gift toy ball robot doll card box bottle cup plate spoon fork knife
+      above below across around behind beside inside outside here there where when who what why how because
+      always usually often sometimes never every all some many much few little more most less best better
+      apple book school teacher student friend family mother father sister brother water milk rice bread chicken fish cat dog house room day week happy good bad big small read write speak listen play study
+    `.toLowerCase().split(/\s+/).filter(Boolean));
+    let currentDay = 0;
+    let appData = createEmptyData();
+    let momMode = false;
+
+    const $ = id => document.getElementById(id);
+
+    function padDate(number) { return String(number).padStart(2, '0'); }
+
+    function formatInputDate(date) {
+      return `${date.getFullYear()}-${padDate(date.getMonth() + 1)}-${padDate(date.getDate())}`;
+    }
+
+    function formatDisplayDate(date) {
+      if (!date || isNaN(date.getTime())) return '--/--';
+      return `${padDate(date.getMonth() + 1)}/${padDate(date.getDate())}`;
+    }
+
+    function getMonday(date = new Date()) {
+      const monday = new Date(date);
+      const day = monday.getDay();
+      monday.setDate(monday.getDate() + (day === 0 ? -6 : 1 - day));
+      monday.setHours(0, 0, 0, 0);
+      return monday;
+    }
+
+    function getDayDate(index) {
+      const base = new Date(appData.startDate || formatInputDate(getMonday()));
+      if (isNaN(base.getTime())) return null;
+      base.setDate(base.getDate() + index);
+      return base;
+    }
+
+    function weekRangeText() {
+      const monday = new Date(appData.startDate || formatInputDate(getMonday()));
+      if (isNaN(monday.getTime())) return '';
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      return `(${monday.toLocaleDateString('zh-TW')} ~ ${sunday.toLocaleDateString('zh-TW')})`;
+    }
+
+    function createEmptyDay() {
+      return {
+        confirmed: false,
+        signature: '',
+        words: Array.from({ length: WORDS_PER_DAY }, () => ({ english: '', chinese: '' }))
+      };
+    }
+
+    function createEmptyData() {
+      const monday = getMonday();
+      return {
+        childName: '',
+        mamaName: '',
+        dateConfirmed: formatInputDate(new Date()),
+        allowance: '',
+        startDate: formatInputDate(monday),
+        weekRange: '',
+        days: Array.from({ length: DAY_COUNT }, createEmptyDay),
+        updatedAt: ''
+      };
+    }
+
+    function normalizeData(data) {
+      const base = createEmptyData();
+      if (!data || typeof data !== 'object') return base;
+      base.childName = data.childName || '';
+      base.mamaName = data.mamaName || '';
+      base.dateConfirmed = data.dateConfirmed || formatInputDate(new Date());
+      base.allowance = data.allowance || '';
+      base.startDate = data.startDate || base.startDate;
+      base.weekRange = data.weekRange || '';
+      base.updatedAt = data.updatedAt || '';
+      if (Array.isArray(data.days)) {
+        for (let d = 0; d < DAY_COUNT; d++) {
+          const incoming = data.days[d] || {};
+          base.days[d].confirmed = Boolean(incoming.confirmed);
+          base.days[d].signature = incoming.signature || '';
+          if (Array.isArray(incoming.words)) {
+            for (let i = 0; i < WORDS_PER_DAY; i++) {
+              const word = incoming.words[i] || {};
+              base.days[d].words[i] = {
+                english: word.english || '',
+                chinese: word.chinese || ''
+              };
+            }
+          }
+        }
+      }
+      return base;
+    }
+
+    function showStatus(message, type = '') {
+      const el = $('saveStatus');
+      el.textContent = message;
+      el.className = `status ${type}`.trim();
+    }
+
+    function saveLocal() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function loadLocal() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? normalizeData(JSON.parse(raw)) : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function syncHeaderToData() {
+      appData.childName = $('childName').value;
+      appData.startDate = $('startDate').value;
+      appData.mamaName = $('mamaName').value.trim();
+      appData.allowance = $('allowance').value.trim();
+      appData.dateConfirmed = formatInputDate(new Date());
+      appData.weekRange = weekRangeText();
+      appData.updatedAt = new Date().toISOString();
+    }
+
+    function syncCurrentDayToData() {
+      const day = appData.days[currentDay];
+      day.confirmed = $('dayConfirmed').checked;
+      day.signature = $('daySignature').value.trim();
+      for (let i = 0; i < WORDS_PER_DAY; i++) {
+        const english = $(`english_${i}`).value.trim();
+        const chinese = $(`chinese_${i}`).value.trim();
+        day.words[i] = { english, chinese };
+      }
+      syncHeaderToData();
+      saveLocal();
+    }
+
+    function applyHeader() {
+      $('childName').value = appData.childName || '';
+      $('startDate').value = appData.startDate || formatInputDate(getMonday());
+      $('mamaName').value = appData.mamaName || '';
+      $('allowance').value = appData.allowance || '';
+    }
+
+    function renderDayTabs() {
+      const tabs = $('dayTabs');
+      tabs.innerHTML = '';
+      for (let i = 0; i < DAY_COUNT; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'day-tab';
+        if (i === currentDay) btn.classList.add('active');
+        if (appData.days[i].confirmed) btn.classList.add('done');
+        btn.textContent = `${i + 1}`;
+        btn.setAttribute('aria-label', `切換到${dayNames[i]}`);
+        btn.addEventListener('click', () => switchDay(i));
+        tabs.appendChild(btn);
+      }
+    }
+
+    function renderWordList() {
+      const list = $('wordList');
+      const day = appData.days[currentDay];
+      list.innerHTML = '';
+      for (let i = 0; i < WORDS_PER_DAY; i++) {
+        const row = document.createElement('div');
+        row.className = 'word-row';
+        row.id = `wordRow_${i}`;
+        row.innerHTML = `
+          <div class="word-index">${i + 1}.</div>
+          <div class="word-fields">
+            <input id="english_${i}" class="english" type="text" lang="en" spellcheck="true" autocapitalize="none" autocomplete="off" placeholder="English" value="${escapeHtml(day.words[i].english)}">
+            <button type="button" class="speak-btn" aria-label="播放第 ${i + 1} 題英文發音" title="播放英文發音">🔊</button>
+            <input id="chinese_${i}" class="chinese" type="text" lang="zh-Hant" placeholder="中文" value="${escapeHtml(day.words[i].chinese)}">
+          </div>
+        `;
+        row.querySelector('.speak-btn').addEventListener('click', () => speakWord(i));
+        row.querySelector('.english').addEventListener('blur', event => {
+          event.target.value = sanitizeEnglish(event.target.value);
+          syncCurrentDayToData();
+        });
+        row.querySelector('.chinese').addEventListener('blur', () => syncCurrentDayToData());
+        list.appendChild(row);
+      }
+    }
+
+    function renderCurrentDay() {
+      applyHeader();
+      renderDayTabs();
+      renderWordList();
+      const day = appData.days[currentDay];
+      $('dayHeading').textContent = dayNames[currentDay];
+      $('dayDateBadge').textContent = formatDisplayDate(getDayDate(currentDay));
+      $('dayConfirmed').checked = day.confirmed;
+      $('daySignature').value = day.signature || '';
+      updateSummary();
+    }
+
+    function switchDay(index) {
+      syncCurrentDayToData();
+      currentDay = index;
+      renderCurrentDay();
+      showStatus(`已切換到${dayNames[currentDay]}，可補登或修改後儲存。`);
+    }
+
+    function sanitizeEnglish(value) {
+      return value.replace(/[！？，。；：、]/g, '').replace(/\s+/g, ' ').trim();
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function hasCjk(value) {
+      return /[\u3400-\u9fff\u3040-\u30ff\u3100-\u312f]/.test(value);
+    }
+
+    function hasLatin(value) {
+      return /[A-Za-z]/.test(value);
+    }
+
+    function normalizedDictionaryWord(value) {
+      return sanitizeEnglish(value).toLowerCase().replace(/[^a-z'-]/g, '');
+    }
+
+    function levenshtein(a, b) {
+      if (a === b) return 0;
+      if (!a) return b.length;
+      if (!b) return a.length;
+      const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+      const curr = Array.from({ length: b.length + 1 }, () => 0);
+      for (let i = 1; i <= a.length; i++) {
+        curr[0] = i;
+        for (let j = 1; j <= b.length; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+        }
+        for (let j = 0; j <= b.length; j++) prev[j] = curr[j];
+      }
+      return prev[b.length];
+    }
+
+    function suggestWord(word) {
+      const clean = normalizedDictionaryWord(word);
+      if (!clean || clean.length < 3 || COMMON_WORDS.has(clean)) return null;
+      let best = null;
+      let bestDistance = 3;
+      COMMON_WORDS.forEach(candidate => {
+        if (Math.abs(candidate.length - clean.length) > 2) return;
+        const distance = levenshtein(clean, candidate);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = candidate;
+        }
+      });
+      return best ? `${word} → 可能是 ${best}` : `${word} 不在常用字庫`;
+    }
+
+    function validateDay(dayIndex = currentDay, markRows = true) {
+      if (dayIndex === currentDay) syncCurrentDayToData();
+      const day = appData.days[dayIndex];
+      const warnings = [];
+      const seen = new Map();
+
+      if (markRows && dayIndex === currentDay) {
+        for (let i = 0; i < WORDS_PER_DAY; i++) {
+          const row = $(`wordRow_${i}`);
+          if (row) row.classList.remove('warning');
+        }
+      }
+
+      day.words.forEach((word, i) => {
+        const english = sanitizeEnglish(word.english || '');
+        const chinese = (word.chinese || '').trim();
+        if (!english && !chinese) return;
+        if (!english || !chinese) warnings.push(`${i + 1}. 英文或中文有一邊空白`);
+        if (hasCjk(english)) warnings.push(`${i + 1}. 英文欄含中文/注音/日文：${english}`);
+        if (!hasCjk(english)) {
+          const suggestion = suggestWord(english);
+          if (suggestion) warnings.push(`${i + 1}. 疑似拼字需確認：${suggestion}`);
+        }
+        if (chinese && !hasCjk(chinese) && hasLatin(chinese)) warnings.push(`${i + 1}. 中文欄看起來像英文，可能填反：${chinese}`);
+        const key = english.toLowerCase();
+        if (key) {
+          if (seen.has(key)) warnings.push(`${i + 1}. 英文重複：${english}`);
+          seen.set(key, true);
+        }
+        if (markRows && dayIndex === currentDay && (!english || !chinese || hasCjk(english))) {
+          const row = $(`wordRow_${i}`);
+          if (row) row.classList.add('warning');
+        }
+      });
+
+      return warnings;
+    }
+
+    function countFilledWords(day) {
+      return day.words.filter(w => (w.english || '').trim() || (w.chinese || '').trim()).length;
+    }
+
+    function countCompleteWords(day) {
+      return day.words.filter(w => (w.english || '').trim() && (w.chinese || '').trim()).length;
+    }
+
+    function completedDays() {
+      return appData.days.filter(day => day.confirmed).length;
+    }
+
+    function weekMissingLines() {
+      return appData.days.map((day, i) => {
+        const complete = countCompleteWords(day);
+        const filled = countFilledWords(day);
+        const flags = [];
+        if (!day.confirmed) flags.push('未確認');
+        if (complete < WORDS_PER_DAY) flags.push(`${complete}/${WORDS_PER_DAY} 完整`);
+        if (filled === 0) flags.push('整天空白');
+        return { index: i, label: dayNames[i], ok: day.confirmed && complete === WORDS_PER_DAY, text: flags.length ? flags.join('、') : 'OK' };
+      });
+    }
+
+    function updateSummary() {
+      const summary = $('weekSummary');
+      summary.innerHTML = '';
+      weekMissingLines().forEach(line => {
+        const row = document.createElement('div');
+        row.className = 'summary-row';
+        row.innerHTML = `<strong>${line.label}</strong><span>${line.ok ? '✅ OK' : '⚠️ ' + escapeHtml(line.text)}</span>`;
+        summary.appendChild(row);
+      });
+      $('completedBadge').textContent = `完成 ${completedDays()} 天`;
+    }
+
+    function canUseGoogleSheets() {
+      return GOOGLE_SHEETS_WEB_APP_URL.startsWith('https://script.google.com/');
+    }
+
+    function loadFromGoogleSheets(childName) {
+      if (!canUseGoogleSheets() || !childName) return Promise.resolve(null);
+      return new Promise((resolve, reject) => {
+        const callbackName = `vocabularyLiteCallback_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+        const script = document.createElement('script');
+        const timeout = setTimeout(() => {
+          cleanup();
+          reject(new Error('Google Sheets 讀取逾時'));
+        }, 6500);
+
+        function cleanup() {
+          clearTimeout(timeout);
+          delete window[callbackName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        window[callbackName] = response => {
+          cleanup();
+          if (!response || response.ok === false) {
+            resolve(null);
+            return;
+          }
+          resolve(response.data || null);
+        };
+
+        const params = new URLSearchParams({ action: 'load', childName, callback: callbackName });
+        script.onerror = () => {
+          cleanup();
+          reject(new Error('Google Sheets 讀取失敗'));
+        };
+        script.src = `${GOOGLE_SHEETS_WEB_APP_URL}?${params.toString()}`;
+        document.body.appendChild(script);
+      });
+    }
+
+    async function sendToGoogleSheets(action, data) {
+      if (!canUseGoogleSheets()) throw new Error('Google Sheets Web App URL 未設定');
+      if (!data.childName) throw new Error('請先選擇小朋友姓名');
+      await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action, data })
+      });
+      return { ok: true };
+    }
+
+    async function saveCurrentDay() {
+      syncCurrentDayToData();
+      if (!appData.childName) {
+        showStatus('請先選擇小朋友姓名。', 'error');
+        return;
+      }
+
+      const warnings = validateDay(currentDay, true);
+      if (warnings.length) {
+        const ok = confirm(`儲存前提醒：\n\n${warnings.join('\n')}\n\n仍要儲存嗎？`);
+        if (!ok) {
+          showStatus('已取消儲存，請先修正提醒項目。', 'warn');
+          return;
+        }
+      }
+
+      const localOk = saveLocal();
+      showStatus(localOk ? '正在儲存到 Google Sheet...' : '本機暫存失敗，但仍嘗試儲存到 Google Sheet。', localOk ? '' : 'warn');
+      try {
+        await sendToGoogleSheets('save', appData);
+        showStatus(`✅ 已儲存${dayNames[currentDay]}到 Google Sheet：${new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}`, 'ok');
+      } catch (error) {
+        showStatus(`⚠️ Google Sheet 儲存可能失敗，本機已暫存。\n${error.message}`, 'warn');
+      }
+      renderCurrentDay();
+    }
+
+    async function loadCloud() {
+      syncCurrentDayToData();
+      const childName = appData.childName;
+      if (!childName) {
+        showStatus('請先選擇小朋友姓名，再載入雲端資料。', 'error');
+        return;
+      }
+      showStatus(`正在從 Google Sheet 載入：${childName}...`);
+      try {
+        const cloudData = await loadFromGoogleSheets(childName);
+        if (!cloudData) {
+          showStatus(`尚未找到 ${childName} 的雲端資料。`, 'warn');
+          return;
+        }
+        appData = normalizeData(cloudData);
+        appData.childName = childName;
+        saveLocal();
+        renderCurrentDay();
+        showStatus(`✅ 已從 Google Sheet 載入：${childName}`, 'ok');
+      } catch (error) {
+        showStatus(`⚠️ Google Sheet 載入失敗：${error.message}`, 'warn');
+      }
+    }
+
+    function speakWord(index) {
+      const input = $(`english_${index}`);
+      const word = sanitizeEnglish(input.value);
+      input.value = word;
+      if (!word) {
+        showStatus('請先輸入英文單字再播放。', 'warn');
+        input.focus();
+        return;
+      }
+      if (!('speechSynthesis' in window)) {
+        showStatus('這個瀏覽器不支援英文發音，請改用 Safari 或 Chrome。', 'error');
+        return;
+      }
+      window.speechSynthesis.cancel();
+
+      const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+      const preferredVoice = pickEnglishVoice(voices);
+      const speakOnce = (delayMs = 0) => {
+        window.setTimeout(() => {
+          const utterance = new SpeechSynthesisUtterance(word);
+          utterance.lang = preferredVoice ? preferredVoice.lang : 'en-US';
+          if (preferredVoice) utterance.voice = preferredVoice;
+          utterance.rate = 0.74;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
+          window.speechSynthesis.speak(utterance);
+        }, delayMs);
+      };
+
+      // 念兩次，中間停一下，讓小孩比較容易聽清楚。
+      speakOnce(0);
+      speakOnce(1050);
+    }
+
+    function pickEnglishVoice(voices) {
+      if (!voices || !voices.length) return null;
+      const englishVoices = voices.filter(v => /^en[-_]/i.test(v.lang || ''));
+      const preferredNames = [
+        'samantha',
+        'alex',
+        'google us english',
+        'google english',
+        'microsoft aria',
+        'microsoft jenny',
+        'daniel',
+        'karen'
+      ];
+
+      for (const name of preferredNames) {
+        const voice = englishVoices.find(v => (v.name || '').toLowerCase().includes(name));
+        if (voice) return voice;
+      }
+
+      return englishVoices.find(v => /^en-US$/i.test(v.lang || '')) || englishVoices[0] || null;
+    }
+
+    // iOS / Safari 常常要等 voiceschanged 後才拿得到語音清單。
+    if ('speechSynthesis' in window && window.speechSynthesis.addEventListener) {
+      window.speechSynthesis.addEventListener('voiceschanged', () => {
+        window.speechSynthesis.getVoices();
+      });
+    }
+
+    function showValidation() {
+      const warnings = validateDay(currentDay, true);
+      if (warnings.length) {
+        showStatus(`⚠️ ${dayNames[currentDay]} 需要確認：\n${warnings.join('\n')}`, 'warn');
+      } else {
+        showStatus(`✅ ${dayNames[currentDay]} 看起來沒問題。`, 'ok');
+      }
+    }
+
+    function enterMomMode() {
+      if (momMode) return;
+      const pin = prompt('請輸入媽媽模式密碼：');
+      if (pin !== MOM_PIN) {
+        showStatus('媽媽模式密碼不正確。預設是 0000，可之後再改。', 'error');
+        return;
+      }
+      momMode = true;
+      $('momPanel').classList.remove('locked');
+      showStatus('已進入媽媽模式，可結算或封存。', 'ok');
+      updateSummary();
+    }
+
+    function exitMomMode() {
+      momMode = false;
+      $('momPanel').classList.add('locked');
+      showStatus('已離開媽媽模式。');
+    }
+
+    async function settleWeek() {
+      syncCurrentDayToData();
+      if (!appData.childName) {
+        showStatus('請先選擇小朋友姓名。', 'error');
+        return;
+      }
+      updateSummary();
+      const missing = weekMissingLines().filter(line => !line.ok);
+      if (missing.length) {
+        const msg = missing.map(line => `${line.label}：${line.text}`).join('\n');
+        const ok = confirm(`結算前提醒：\n\n${msg}\n\n完成天數：${completedDays()} 天\n\n仍要照目前資料封存嗎？`);
+        if (!ok) {
+          showStatus('已取消結算，可切換到缺漏日期補登。', 'warn');
+          return;
+        }
+      }
+
+      const archiveData = JSON.parse(JSON.stringify(appData));
+      archiveData.archivedAt = new Date().toISOString();
+      archiveData.archiveType = 'week-end-lite';
+      archiveData.completedDays = `${completedDays()} 天`;
+      archiveData.weekRange = weekRangeText();
+
+      showStatus('正在封存到 Google Sheet...');
+      try {
+        await sendToGoogleSheets('archive', archiveData);
+        showStatus(`✅ 已封存到 Google Sheet。完成天數：${completedDays()} 天`, 'ok');
+        const shouldNext = confirm('封存已送出。要清空並切到下一週嗎？');
+        if (shouldNext) moveToNextWeek();
+      } catch (error) {
+        showStatus(`❌ 封存失敗：${error.message}\n資料仍保留，沒有清空。`, 'error');
+      }
+    }
+
+    function moveToNextWeek() {
+      const oldChild = appData.childName;
+      const oldMama = appData.mamaName;
+      const oldAllowance = appData.allowance;
+      const start = new Date(appData.startDate || formatInputDate(getMonday()));
+      if (isNaN(start.getTime())) start.setTime(getMonday().getTime());
+      start.setDate(start.getDate() + 7);
+      appData = createEmptyData();
+      appData.childName = oldChild;
+      appData.mamaName = oldMama;
+      appData.allowance = oldAllowance;
+      appData.startDate = formatInputDate(start);
+      currentDay = 0;
+      saveLocal();
+      renderCurrentDay();
+      showStatus('已切到下一週，可開始新週期。', 'ok');
+    }
+
+    function clearWeek() {
+      const ok = confirm('確定要清空本週畫面嗎？\n\n建議只有在已封存後才清空。');
+      if (!ok) return;
+      const oldChild = appData.childName;
+      const oldMama = appData.mamaName;
+      const oldAllowance = appData.allowance;
+      const oldStart = appData.startDate;
+      appData = createEmptyData();
+      appData.childName = oldChild;
+      appData.mamaName = oldMama;
+      appData.allowance = oldAllowance;
+      appData.startDate = oldStart;
+      currentDay = 0;
+      saveLocal();
+      renderCurrentDay();
+      showStatus('已清空本週畫面，本機暫存已更新。', 'warn');
+    }
+
+    function init() {
+      const localData = loadLocal();
+      appData = localData || createEmptyData();
+      applyHeader();
+      renderCurrentDay();
+
+      $('childName').addEventListener('change', () => {
+        syncCurrentDayToData();
+        showStatus(`已選擇 ${appData.childName || '未選擇'}。可按「載入雲端」同步資料。`);
+      });
+      $('startDate').addEventListener('change', () => { syncCurrentDayToData(); renderCurrentDay(); });
+      $('mamaName').addEventListener('blur', syncCurrentDayToData);
+      $('allowance').addEventListener('blur', syncCurrentDayToData);
+      $('dayConfirmed').addEventListener('change', () => { syncCurrentDayToData(); renderCurrentDay(); });
+      $('daySignature').addEventListener('blur', syncCurrentDayToData);
+      $('saveBtn').addEventListener('click', saveCurrentDay);
+      $('loadBtn').addEventListener('click', loadCloud);
+      $('validateBtn').addEventListener('click', showValidation);
+      $('momModeBtn').addEventListener('click', enterMomMode);
+      $('exitMomModeBtn').addEventListener('click', exitMomMode);
+      $('settleBtn').addEventListener('click', settleWeek);
+      $('nextWeekBtn').addEventListener('click', moveToNextWeek);
+      $('clearBtn').addEventListener('click', clearWeek);
+    }
+
+    window.addEventListener('load', init, { once: true });
+  </script>
+</body>
+</html>

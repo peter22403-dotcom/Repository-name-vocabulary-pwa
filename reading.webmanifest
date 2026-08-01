@@ -1,0 +1,11 @@
+{
+  "name": "會考閱讀助手",
+  "short_name": "會考閱讀",
+  "start_url": "reading.html",
+  "display": "standalone",
+  "background_color": "#f6f7fb",
+  "theme_color": "#2563eb",
+  "icons": [
+    { "src": "app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

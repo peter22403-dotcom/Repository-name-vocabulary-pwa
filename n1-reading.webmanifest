@@ -1,0 +1,14 @@
+{
+  "name": "JLPT N1 読解トレーナー",
+  "short_name": "N1 読解",
+  "start_url": "n1-reading.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f7fb",
+  "theme_color": "#7c3aed",
+  "icons": [
+    { "src": "n1-icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "n1-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

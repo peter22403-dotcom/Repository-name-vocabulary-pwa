@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="N1 読解">
+  <meta name="theme-color" content="#7c3aed">
+  <link rel="apple-touch-icon" href="n1-icon-180.png">
+  <link rel="icon" type="image/png" href="n1-icon-180.png">
+  <link rel="manifest" href="n1-reading.webmanifest">
+  <title>📚 JLPT N1 読解トレーナー</title>
+  <style>
+    :root {
+      --bg: #f6f7fb; --card: #ffffff; --ink: #18202f; --muted: #647083;
+      --line: #dfe4ec; --primary: #7c3aed; --primary-dark: #5b21b6;
+      --green: #16803c; --red: #c62828; --amber: #b7791f;
+      --soft-blue: #f1ecff; --soft-green: #eaf8ef; --soft-amber: #fff8e6;
+      --soft-red: #fdecec;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Segoe UI", "Noto Sans TC", "PingFang TC", sans-serif;
+      line-height: 1.5;
+    }
+    .app { width: min(100%, 820px); margin: 0 auto;
+      padding: max(14px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+               calc(60px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; margin: 12px 0; }
+    h1 { font-size: 1.45rem; margin: 6px 0 2px; text-align: center; }
+    .subtitle { text-align: center; color: var(--muted); font-size: .92rem; margin: 0 0 6px; }
+    label, .label { display: block; font-weight: 700; margin: 10px 0 5px; }
+    input, select, button, textarea { font: inherit; }
+    input, select, textarea {
+      width: 100%; min-height: 46px; border: 1px solid var(--line);
+      border-radius: 12px; padding: 10px 12px; background: #fff; color: var(--ink);
+    }
+    input:focus, select:focus, textarea:focus { outline: 2px solid rgba(124,58,237,.22); border-color: var(--primary); }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; min-height: 50px; border: none; border-radius: 14px;
+      background: var(--primary); color: #fff; font-weight: 800; font-size: 1.02rem;
+      cursor: pointer; padding: 10px 14px; margin-top: 10px;
+    }
+    .btn:active { background: var(--primary-dark); }
+    .btn.ghost { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); }
+    .btn.soft { background: var(--soft-blue); color: var(--primary-dark); }
+    .btn.green { background: var(--green); }
+    .btn:disabled { opacity: .55; cursor: default; }
+    .btn.small { width: auto; min-height: 38px; padding: 6px 12px; font-size: .9rem; margin-top: 0; border-radius: 10px; }
+
+    .nav { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin: 8px 0 4px; }
+    .nav button {
+      border: 1px solid var(--line); background: #fff; border-radius: 12px;
+      padding: 10px 4px; color: var(--ink); font-weight: 800; cursor: pointer; min-height: 46px;
+    }
+    .nav button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .spacer { flex: 1; }
+    .pill { display: inline-block; background: var(--soft-blue); color: var(--primary-dark); border-radius: 999px; padding: 3px 10px; font-size: .82rem; font-weight: 700; }
+    .hint { color: var(--muted); font-size: .88rem; }
+    .hidden { display: none !important; }
+
+    /* 文章 */
+    .article-title { font-size: 1.3rem; font-weight: 800; margin: 4px 0 4px; }
+    .genre-tag { font-size: .78rem; font-weight: 800; color: var(--primary-dark); background: var(--soft-blue); border-radius: 999px; padding: 2px 10px; }
+    .article { font-size: 1.22rem; line-height: 2.15; }
+    .article p { margin: 0 0 4px; }
+    .w { cursor: pointer; border-radius: 4px; padding: 0 1px; transition: background .1s; }
+    .w:active { background: var(--soft-blue); }
+    .w.glossary { border-bottom: 2px dotted var(--amber); }
+    .w.marked { background: #efe4ff; border-bottom: 2px solid var(--primary); }
+    /* ふりがな：預設關，body.furi-on 才顯示 */
+    ruby rt { display: none; font-size: .55em; color: var(--muted); font-weight: 400; }
+    body.furi-on ruby rt { display: revert; }
+
+    .section-title { font-weight: 800; font-size: 1.05rem; margin: 4px 0 8px; display:flex; align-items:center; gap:6px; }
+    .gl-item, .gr-item { border-top: 1px solid var(--line); padding: 10px 0; }
+    .gl-item:first-child, .gr-item:first-child { border-top: none; }
+    .gl-word { font-weight: 800; }
+    .gl-read { color: var(--muted); font-size: .82rem; margin-left: 6px; }
+    .gl-pos { color: var(--muted); font-size: .85rem; margin-left: 6px; }
+    .gl-ex { color: var(--muted); font-size: .95rem; margin-top: 2px; }
+    .gr-item .gl-ex { font-style: normal; }
+
+    /* 測驗 */
+    .q { border-top: 1px solid var(--line); padding: 12px 0; }
+    .q:first-child { border-top: none; }
+    .q-type { font-size: .74rem; font-weight: 800; color: var(--primary-dark); background: var(--soft-blue); border-radius: 999px; padding: 1px 8px; margin-right: 6px; }
+    .q-text { font-weight: 700; margin-bottom: 8px; }
+    .opt { display: flex; align-items: flex-start; gap: 8px; border: 1px solid var(--line);
+      border-radius: 12px; padding: 10px 12px; margin: 6px 0; cursor: pointer; background:#fff; }
+    .opt input { width: auto; min-height: 0; margin-top: 3px; }
+    .opt.correct { background: var(--soft-green); border-color: var(--green); }
+    .opt.wrong { background: var(--soft-red); border-color: var(--red); }
+    .explain { background: var(--soft-amber); border-radius: 12px; padding: 10px 12px; margin-top: 8px; font-size: .95rem; }
+
+    /* 筆記本 */
+    .vocab-row { display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--line); padding: 10px 0; }
+    .vocab-row:first-child { border-top: none; }
+    .vocab-main { flex: 1; min-width: 0; }
+    .vocab-word { font-weight: 800; }
+    .vocab-zh { color: var(--muted); font-size: .92rem; }
+    .type-badge { font-size: .72rem; font-weight: 800; border-radius: 6px; padding: 1px 6px; margin-right: 6px; }
+    .type-word { background: var(--soft-blue); color: var(--primary-dark); }
+    .type-grammar { background: var(--soft-amber); color: var(--amber); }
+    .status-tag { font-size: .78rem; font-weight: 800; border-radius: 999px; padding: 2px 9px; }
+    .status-new { background: var(--soft-amber); color: var(--amber); }
+    .status-known { background: var(--soft-green); color: var(--green); }
+    .vocab-row { flex-wrap: wrap; }
+    .reading-edit { display: flex; gap: 8px; align-items: center; padding: 8px 0 4px; }
+    .reading-edit input { min-height: 40px; }
+    .reading-edit .btn.small { flex: 0 0 auto; }
+    .rd-hint { opacity: .6; font-style: italic; }
+
+    /* 彈窗 */
+    .sheet-bg { position: fixed; inset: 0; background: rgba(20,25,40,.45); display: flex; align-items: flex-end; justify-content: center; z-index: 50; }
+    .sheet { background: #fff; width: min(100%, 520px); border-radius: 20px 20px 0 0; padding: 18px 18px 26px; animation: up .18s ease; }
+    @keyframes up { from { transform: translateY(30px); opacity: .5; } to { transform: none; opacity: 1; } }
+    .sheet h3 { margin: 0 0 2px; font-size: 1.35rem; }
+    .sheet .read { color: var(--muted); font-size: .95rem; margin: 0 0 6px; }
+    .sheet .zh { font-size: 1.1rem; margin: 8px 0; }
+
+    .toast { position: fixed; left: 50%; bottom: calc(26px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+      background: #18202f; color: #fff; padding: 10px 16px; border-radius: 999px;
+      font-weight: 700; z-index: 80; opacity: 0; transition: opacity .2s; pointer-events: none; }
+    .toast.show { opacity: .95; }
+
+    /* 週曆打卡 */
+    .day-tabs { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; margin: 6px 0 4px; }
+    .day-tab { border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 8px 2px; text-align: center; font-weight: 800; font-size: .9rem; }
+    .day-tab small { display:block; font-weight:600; color: var(--muted); font-size:.7rem; }
+    .day-tab.today { border-color: var(--primary); }
+    .day-tab.done { background: var(--soft-green); border-color: var(--green); color: var(--green); }
+    .day-tab.done::after { content: " ✓"; }
+
+    /* 統合理解 A・B */
+    .dual-label { font-weight: 900; font-size: 1.05rem; color: var(--primary-dark);
+      background: var(--soft-blue); border-radius: 10px; padding: 4px 12px; margin: 6px 0 8px; display: inline-block; }
+    .dual-label + .para-wrap { margin-top: 2px; }
+
+    /* 情報検索 */
+    .info-intro { font-size: 1.05rem; margin: 2px 0 12px; }
+    .info-sec { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin: 10px 0; background: #fcfcfe; }
+    .info-h { font-weight: 900; font-size: 1.05rem; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 2px solid var(--soft-blue); }
+    .info-row { display: flex; gap: 10px; padding: 5px 0; border-top: 1px dashed var(--line); font-size: 1.02rem; }
+    .info-row:first-of-type { border-top: none; }
+    .info-label { flex: 0 0 34%; font-weight: 800; color: var(--muted); }
+    .info-val { flex: 1; }
+    .info-tw { overflow-x: auto; margin: 8px 0; }
+    .info-table { border-collapse: collapse; width: 100%; font-size: .98rem; }
+    .info-table th, .info-table td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; white-space: nowrap; }
+    .info-table th { background: var(--soft-blue); color: var(--primary-dark); font-weight: 800; }
+    .info-note { font-size: .92rem; color: var(--amber); margin-top: 6px; }
+
+    /* 段落翻譯 */
+    .para-wrap { margin: 0 0 10px; }
+    .para-wrap p { margin: 0; }
+    .tr-btn { margin-top: 2px; font-size: .82rem; color: var(--primary); background: none; border: none; cursor: pointer; padding: 2px 0; font-weight: 700; }
+    .tr-zh { background: var(--soft-blue); border-radius: 10px; padding: 8px 12px; margin-top: 6px; font-size: 1.02rem; color: var(--primary-dark); }
+
+    .loading { text-align: center; color: var(--muted); padding: 18px; }
+    .spin { display:inline-block; width:18px; height:18px; border:3px solid var(--line);
+      border-top-color: var(--primary); border-radius:50%; animation: sp .8s linear infinite; vertical-align:-4px; margin-right:6px;}
+    @keyframes sp { to { transform: rotate(360deg); } }
+    .err { background: var(--soft-red); color: var(--red); border-radius: 12px; padding: 10px 12px; margin: 8px 0; font-size:.92rem; }
+
+    .toggle { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: .9rem; cursor: pointer; }
+    .toggle .box { width: 42px; height: 24px; border-radius: 999px; background: var(--line); position: relative; transition: background .15s; }
+    .toggle .box::after { content:""; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#fff; transition: transform .15s; }
+    body.furi-on .toggle .box { background: var(--primary); }
+    body.furi-on .toggle .box::after { transform: translateX(18px); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>📚 JLPT N1 読解トレーナー</h1>
+    <p class="subtitle">読む · 語をタップして意味 · 分からない語を収集 · N1 読解問題</p>
+
+    <!-- 設定列 -->
+    <div class="card" id="settingsCard">
+      <div class="row">
+        <span class="label" style="margin:0">🎌 JLPT N1 読解</span>
+        <span class="spacer"></span>
+        <button class="btn small ghost" id="gearBtn" type="button">⚙️ 後端設定</button>
+      </div>
+      <div id="urlBox" class="hidden">
+        <label>後端網址（Apps Script Web App URL）</label>
+        <input id="urlInput" placeholder="https://script.google.com/macros/s/xxxx/exec" inputmode="url">
+        <div class="row" style="margin-top:8px">
+          <button class="btn small" id="saveUrlBtn" type="button">儲存</button>
+          <button class="btn small soft" id="testBtn" type="button">測試連線</button>
+          <span class="hint" id="urlStatus"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分頁 -->
+    <div class="nav">
+      <button data-tab="gen" class="active">📝 出文章</button>
+      <button data-tab="read">📖 読む</button>
+      <button data-tab="vocab">📓 ノート</button>
+    </div>
+
+    <!-- 出文章 -->
+    <section id="tab-gen">
+      <div class="card" id="checkCard">
+        <div class="section-title">📅 今日の読解チェックイン</div>
+        <div class="day-tabs" id="weekTabs"></div>
+        <button class="btn green" id="checkBtn" type="button">✅ 今日クリア</button>
+        <div class="hint" id="checkStatus" style="text-align:center;margin-top:8px"></div>
+      </div>
+      <div class="card">
+        <label>テーマ</label>
+        <select id="topicSel">
+          <option>社会・経済</option><option>科学・技術</option><option>環境・自然</option>
+          <option>言語・文化</option><option>心理・哲学</option><option>教育</option>
+          <option>メディア・情報</option><option>医療・健康</option><option>歴史</option>
+          <option>芸術・文学</option><option>エッセイ・随筆</option><option>情報検索（案内・広告）</option>
+        </select>
+        <input id="topicCustom" placeholder="テーマを自分で入力（任意）" style="margin-top:8px">
+        <label>問題タイプ（本試験の大問）</label>
+        <select id="qtypeSel">
+          <option value="tan">問題8　内容理解・短文（約200字／1問）</option>
+          <option value="chu" selected>問題9　内容理解・中文（約500字／3問）</option>
+          <option value="cho">問題10　内容理解・長文（約1000字／4問）</option>
+          <option value="tougou">問題11　統合理解（A・B 2篇／3問）</option>
+          <option value="shuchou">問題12　主張理解・長文（約1000字／4問）</option>
+          <option value="jouhou">問題13　情報検索（案内・広告／2問）</option>
+        </select>
+        <button class="btn" id="genBtn" type="button">✨ 文章を作る</button>
+        <div id="genMsg"></div>
+      </div>
+    </section>
+
+    <!-- 読む -->
+    <section id="tab-read" class="hidden">
+      <div class="card" id="readerEmpty">
+        <p class="hint" style="text-align:center; margin:8px 0;">まだ文章がありません。「📝 出文章」で1本作ってください 👆</p>
+      </div>
+      <div id="readerBox" class="hidden">
+        <div class="card">
+          <div class="row">
+            <div class="article-title" id="artTitle" style="flex:1;min-width:0"></div>
+            <span class="genre-tag" id="artGenre"></span>
+          </div>
+          <div class="row" style="margin:4px 0 8px">
+            <label class="toggle"><span class="box"></span>ふりがな</label>
+            <span class="spacer"></span>
+            <span class="hint">💡 語をタップ→意味 ／「分からない」でノートへ</span>
+          </div>
+          <div class="article" id="artBody"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">📘 重要語彙</div>
+          <div id="glossaryBox"></div>
+        </div>
+
+        <div class="card" id="grammarCard">
+          <div class="section-title">📐 N1 文法ポイント</div>
+          <div id="grammarBox"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">📝 読解問題</div>
+          <div id="quizBox"></div>
+          <button class="btn green" id="submitQuizBtn" type="button">✅ 答え合わせ</button>
+          <div id="quizResult"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ノート -->
+    <section id="tab-vocab" class="hidden">
+      <div class="card">
+        <div class="row">
+          <div class="section-title" style="margin:0">📓 マイノート</div>
+          <span class="spacer"></span>
+          <button class="btn small soft" id="reloadVocabBtn" type="button">🔄 再読込</button>
+        </div>
+        <div id="vocabList"><div class="loading">読込中…</div></div>
+      </div>
+      <div class="card">
+        <button class="btn" id="startReviewBtn" type="button">🎯 復習テスト開始</button>
+        <div id="reviewBox"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+  var LS = {
+    url: 'n1_url', article: 'n1_article', cache: 'n1_wordcache', furi: 'n1_furi'
+  };
+  var state = {
+    url: localStorage.getItem(LS.url) || '',
+    article: null,
+    marked: {},            // { "word|reading": true }
+    wordCache: {}
+  };
+  try { state.wordCache = JSON.parse(localStorage.getItem(LS.cache) || '{}'); } catch (e) {}
+  try { state.article = JSON.parse(localStorage.getItem(LS.article) || 'null'); } catch (e) {}
+
+  var $ = function (id) { return document.getElementById(id); };
+  function toast(msg) {
+    var t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._t); t._t = setTimeout(function(){ t.classList.remove('show'); }, 1900);
+  }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+  // 有沒有假名/漢字/字母/數字 → 可點
+  function isText(s){ return /[぀-ヿ㐀-鿿豈-﫿A-Za-z0-9０-９]/.test(s || ''); }
+  // 有沒有漢字 → 需要 ruby
+  function hasKanji(s){ return /[㐀-鿿豈-﫿]/.test(s || ''); }
+  function mkey(word, reading){ return String(word) + '|' + String(reading || ''); }
+
+  // ---- 後端 API ----
+  async function api(action, payload) {
+    if (!state.url) throw new Error('尚未設定後端網址（按右上角 ⚙️ 後端設定）');
+    var res = await fetch(state.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 避免 CORS 預檢
+      body: JSON.stringify(Object.assign({ action: action }, payload || {}))
+    });
+    var j;
+    try { j = await res.json(); }
+    catch (e) { throw new Error('後端回應格式錯誤（可能網址錯或未部署）'); }
+    if (!j.ok) throw new Error(j.error || '後端錯誤');
+    return j.data;
+  }
+
+  // ---- 初始化 ----
+  $('urlInput').value = state.url;
+  if (localStorage.getItem(LS.furi) === '1') document.body.classList.add('furi-on');
+
+  $('gearBtn').onclick = function () { $('urlBox').classList.toggle('hidden'); };
+  $('saveUrlBtn').onclick = function () {
+    state.url = $('urlInput').value.trim(); localStorage.setItem(LS.url, state.url);
+    $('urlStatus').textContent = '已儲存 ✓'; toast('後端網址已儲存');
+  };
+  $('testBtn').onclick = async function () {
+    state.url = $('urlInput').value.trim(); localStorage.setItem(LS.url, state.url);
+    $('urlStatus').textContent = '測試中…';
+    try {
+      var r = await fetch(state.url); var j = await r.json();
+      $('urlStatus').textContent = j.ok ? '連線成功 ✅' : '有回應但格式怪';
+    } catch (e) { $('urlStatus').textContent = '連線失敗 ✗'; }
+  };
+
+  // ふりがな 開關（純 CSS，瞬間切換）
+  document.querySelector('.toggle') && (document.querySelector('.toggle').onclick = function () {
+    document.body.classList.toggle('furi-on');
+    localStorage.setItem(LS.furi, document.body.classList.contains('furi-on') ? '1' : '0');
+  });
+
+  // ---- 每日打卡 ----
+  function ymd(d) {
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function weekDates() {
+    var now = new Date(); var dow = (now.getDay() + 6) % 7;
+    var mon = new Date(now); mon.setDate(now.getDate() - dow);
+    var out = []; for (var i=0;i<7;i++){ var d=new Date(mon); d.setDate(mon.getDate()+i); out.push(d);} return out;
+  }
+  var WEEK_LABEL = ['月','火','水','木','金','土','日'];
+
+  function renderWeek(doneSet) {
+    var wt = $('weekTabs'); wt.innerHTML = ''; var today = ymd(new Date());
+    weekDates().forEach(function (d, i) {
+      var key = ymd(d);
+      var el = document.createElement('div');
+      el.className = 'day-tab' + (doneSet[key] ? ' done' : '') + (key === today ? ' today' : '');
+      el.innerHTML = WEEK_LABEL[i] + '<small>' + (d.getMonth()+1) + '/' + d.getDate() + '</small>';
+      wt.appendChild(el);
+    });
+    var doneCount = weekDates().filter(function (d){ return doneSet[ymd(d)]; }).length;
+    var todayDone = !!doneSet[today];
+    $('checkStatus').textContent = '今週 ' + doneCount + ' 日クリア' + (todayDone ? '（今日クリア済 ✓）' : '');
+    $('checkBtn').textContent = todayDone ? '✓ 今日クリア済（もう一度で取消）' : '✅ 今日クリア';
+    $('checkBtn').className = 'btn ' + (todayDone ? 'soft' : 'green');
+    $('checkBtn').dataset.done = todayDone ? '1' : '0';
+  }
+  async function loadChecks() {
+    renderWeek(state.checkSet || {});
+    if (!state.url) { $('checkStatus').textContent = '（設定後端後才能打卡）'; return; }
+    try {
+      var d = await api('loadChecks', {});
+      var set = {};
+      (d.checks || []).forEach(function (c) {
+        if (!c.done) return; var key = c.date;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) { var dd = new Date(c.date); if (!isNaN(dd)) key = ymd(dd); }
+        set[key] = true;
+      });
+      state.checkSet = set; renderWeek(set);
+    } catch (e) { $('checkStatus').textContent = '打卡紀錄載入失敗'; }
+  }
+  $('checkBtn').onclick = async function () {
+    if (!state.url) { toast('請先設定後端網址'); return; }
+    var newDone = $('checkBtn').dataset.done !== '1';
+    $('checkBtn').disabled = true;
+    try { await api('checkIn', { done: newDone }); await loadChecks(); toast(newDone ? '今日クリア 📅' : '取消しました'); }
+    catch (e) { toast('打卡失敗：' + e.message); }
+    finally { $('checkBtn').disabled = false; }
+  };
+
+  // ---- 分頁 ----
+  var tabs = document.querySelectorAll('.nav button');
+  tabs.forEach(function (b) {
+    b.onclick = function () {
+      tabs.forEach(function (x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      ['gen','read','vocab'].forEach(function (t) { $('tab-' + t).classList.toggle('hidden', t !== b.dataset.tab); });
+      if (b.dataset.tab === 'vocab') loadVocab();
+    };
+  });
+  function switchTab(name) { document.querySelector('.nav button[data-tab="'+name+'"]').click(); }
+
+  // ---- 出文章 ----
+  $('genBtn').onclick = async function () {
+    var topic = $('topicCustom').value.trim() || $('topicSel').value;
+    var qtype = $('qtypeSel').value;
+    $('genBtn').disabled = true;
+    $('genMsg').innerHTML = '<div class="loading"><span class="spin"></span>Gemini 生成中… 約 15-30 秒</div>';
+    try {
+      var art = await api('generateArticle', { topic: topic, qtype: qtype });
+      state.article = art;
+      localStorage.setItem(LS.article, JSON.stringify(art));
+      $('genMsg').innerHTML = '<div class="card" style="background:var(--soft-green);border-color:var(--green)">✅ 完成！「📖 読む」へ。</div>';
+      renderReader();
+      switchTab('read');
+    } catch (e) {
+      $('genMsg').innerHTML = '<div class="err">生成失敗：' + esc(e.message) + '</div>';
+    } finally { $('genBtn').disabled = false; }
+  };
+
+  // ---- 讀文章 ----
+  function isMarked(word, reading){ return !!state.marked[mkey(word, reading)]; }
+  function addMarkedLocal(word, reading){ state.marked[mkey(word, reading)] = true; }
+
+  // 把 tokens 依 {br:1} 切成段落陣列
+  function paragraphs(tokens) {
+    var out = [[]];
+    (tokens || []).forEach(function (t) {
+      if (t && t.br) { out.push([]); } else if (t && t.s != null) { out[out.length-1].push(t); }
+    });
+    return out.filter(function (p){ return p.length; });
+  }
+  function paraText(tokList){ return tokList.map(function(t){ return t.s; }).join(''); }
+
+  // 還原校驗：tokens 接起來若跟純文字全文對不上，就退回純文字渲染（至少不漏字）
+  function stripWs(s){ return String(s == null ? '' : s).replace(/\s+/g, ''); }
+  function tokensConcat(tokens){ return (tokens || []).map(function (t){ return t.br ? '\n' : (t.s || ''); }).join(''); }
+  function plainToTokens(plain){
+    return String(plain || '').split(/\n+/).filter(function (s){ return s.trim(); })
+      .reduce(function (acc, s, i){ if (i) acc.push({ br:1 }); acc.push({ s:s }); return acc; }, []);
+  }
+  // 回傳實際要用的 tokens；tokens 不可靠且有純文字時退回純文字（並回報是否降級）
+  function reliableTokens(tokens, plain, flag){
+    var hasTokens = tokens && tokens.length;
+    if (hasTokens && (plain == null || plain === '' || stripWs(tokensConcat(tokens)) === stripWs(plain))) return tokens;
+    if (plain != null && plain !== '') { flag.degraded = true; return plainToTokens(plain); }
+    return hasTokens ? tokens : [];
+  }
+
+  // A・B 標頭（統合理解）
+  function subHead(label) {
+    var d = document.createElement('div'); d.className = 'dual-label';
+    d.textContent = '【' + label + '】'; return d;
+  }
+
+  // 逐段渲染：可點 token + ふりがな + 段落翻譯。prefix 讓 A/B 翻譯 key 不撞
+  function appendParagraphs(container, tokens, prefix) {
+    var art = state.article;
+    paragraphs(tokens).forEach(function (tokList, pIdx) {
+      var key = prefix + pIdx;
+      var wrap = document.createElement('div'); wrap.className = 'para-wrap';
+      var p = document.createElement('p');
+      var sentence = paraText(tokList);
+
+      tokList.forEach(function (t) {
+        if (!isText(t.s)) { p.appendChild(document.createTextNode(t.s)); return; }
+        var span = document.createElement('span');
+        span.className = 'w';
+        if (t.k) span.classList.add('glossary');
+        if (isMarked(t.s, t.r)) span.classList.add('marked');
+        if (t.r && hasKanji(t.s)) span.innerHTML = '<ruby>' + esc(t.s) + '<rt>' + esc(t.r) + '</rt></ruby>';
+        else span.textContent = t.s;
+        span.onclick = function () { openWordSheet(t, sentence, span); };
+        p.appendChild(span);
+      });
+      wrap.appendChild(p);
+
+      var trBtn = document.createElement('button'); trBtn.className = 'tr-btn'; trBtn.textContent = '🈯 この段落を訳す';
+      var zhDiv = document.createElement('div'); zhDiv.className = 'tr-zh hidden';
+      trBtn.onclick = function () {
+        if (art.trans[key]) {
+          zhDiv.classList.toggle('hidden');
+          trBtn.textContent = zhDiv.classList.contains('hidden') ? '🈯 この段落を訳す' : '🔼 訳を隠す';
+          return;
+        }
+        trBtn.disabled = true; trBtn.textContent = '翻譯中…';
+        api('translate', { text: sentence }).then(function (r) {
+          art.trans[key] = r.zh || '';
+          localStorage.setItem(LS.article, JSON.stringify(art));
+          zhDiv.textContent = art.trans[key]; zhDiv.classList.remove('hidden');
+          trBtn.disabled = false; trBtn.textContent = '🔼 訳を隠す';
+        }).catch(function (e) {
+          trBtn.disabled = false; trBtn.textContent = '🈯 この段落を訳す'; toast('翻譯失敗：' + e.message);
+        });
+      };
+      if (art.trans[key]) zhDiv.textContent = art.trans[key];
+      wrap.appendChild(trBtn); wrap.appendChild(zhDiv);
+      container.appendChild(wrap);
+    });
+  }
+
+  // 情報検索：結構化掲示物（見出し / 項目 / 表 / 注意事項）
+  function renderInfo(container, info) {
+    if (info.intro) { var ip = document.createElement('p'); ip.className = 'info-intro'; ip.textContent = info.intro; container.appendChild(ip); }
+    (info.sections || []).forEach(function (sec) {
+      var card = document.createElement('div'); card.className = 'info-sec';
+      if (sec.heading) { var h = document.createElement('div'); h.className = 'info-h'; h.textContent = sec.heading; card.appendChild(h); }
+      (sec.rows || []).forEach(function (r) {
+        var row = document.createElement('div'); row.className = 'info-row';
+        row.innerHTML = '<span class="info-label">' + esc(r.label) + '</span><span class="info-val">' + esc(r.value) + '</span>';
+        card.appendChild(row);
+      });
+      if (sec.table && sec.table.rows && sec.table.rows.length) {
+        var scroll = document.createElement('div'); scroll.className = 'info-tw';
+        var tb = document.createElement('table'); tb.className = 'info-table';
+        if (sec.table.headers && sec.table.headers.length) {
+          var thead = document.createElement('tr');
+          sec.table.headers.forEach(function (hd) { var th = document.createElement('th'); th.textContent = hd; thead.appendChild(th); });
+          tb.appendChild(thead);
+        }
+        sec.table.rows.forEach(function (rw) {
+          var tr = document.createElement('tr');
+          (rw || []).forEach(function (cell) { var td = document.createElement('td'); td.textContent = cell; tr.appendChild(td); });
+          tb.appendChild(tr);
+        });
+        scroll.appendChild(tb); card.appendChild(scroll);
+      }
+      (sec.notes || []).forEach(function (n) {
+        var nt = document.createElement('div'); nt.className = 'info-note'; nt.textContent = '※ ' + n; card.appendChild(nt);
+      });
+      container.appendChild(card);
+    });
+  }
+
+  function renderReader() {
+    var art = state.article;
+    if (!art) { $('readerEmpty').classList.remove('hidden'); $('readerBox').classList.add('hidden'); return; }
+    $('readerEmpty').classList.add('hidden');
+    $('readerBox').classList.remove('hidden');
+    $('artTitle').textContent = art.title || '(無題)';
+    $('artGenre').textContent = art.genre || '';
+
+    var body = $('artBody'); body.innerHTML = '';
+    art.trans = art.trans || {};
+
+    var flag = { degraded: false };
+    if (art.format === 'dual') {                       // 問題11 統合理解：A・B 兩篇
+      body.appendChild(subHead(art.labelA || 'A'));
+      appendParagraphs(body, reliableTokens(art.tokensA, art.articleA, flag), 'A');
+      body.appendChild(subHead(art.labelB || 'B'));
+      appendParagraphs(body, reliableTokens(art.tokensB, art.articleB, flag), 'B');
+    } else if (art.format === 'info') {                // 問題13 情報検索：結構化
+      renderInfo(body, art.info || {});
+    } else {                                           // single（含舊資料相容）
+      appendParagraphs(body, reliableTokens(art.tokens, art.article, flag), '');
+    }
+    if (flag.degraded) {
+      var dn = document.createElement('div'); dn.className = 'hint';
+      dn.style.cssText = 'margin-top:8px;color:var(--amber)';
+      dn.textContent = '⚠️ 自動分かち書きが不完全だったため、原文のまま表示しています（語タップは無効・ふりがなは付きません）。';
+      body.appendChild(dn);
+    }
+
+    // 重要語彙
+    var gb = $('glossaryBox'); gb.innerHTML = '';
+    (art.glossary || []).forEach(function (g) {
+      var d = document.createElement('div'); d.className = 'gl-item';
+      d.innerHTML =
+        '<div><span class="gl-word">' + esc(g.word) + '</span>' +
+        (g.reading ? '<span class="gl-read">' + esc(g.reading) + '</span>' : '') +
+        '<span class="gl-pos">' + esc(g.pos || '') + '</span></div>' +
+        '<div>' + esc(g.zh || '') + '</div>' +
+        (g.example ? '<div class="gl-ex">' + esc(g.example) + '</div>' : '');
+      var add = document.createElement('button'); add.className = 'btn small soft'; add.style.marginTop = '6px';
+      var already = isMarked(g.word, g.reading);
+      add.textContent = already ? '✓ ノート済' : '➕ ノートへ'; add.disabled = already;
+      add.onclick = function () {
+        add.disabled = true; add.textContent = '追加中…';
+        saveToNote('word', g.word, g.reading, g.pos, g.zh, g.example, function(ok){
+          add.textContent = ok ? '✓ ノート済' : '➕ ノートへ'; add.disabled = ok;
+        });
+      };
+      d.appendChild(add);
+      gb.appendChild(d);
+    });
+
+    // 文法
+    var grB = $('grammarBox');
+    if (art.grammar && art.grammar.length) {
+      $('grammarCard').classList.remove('hidden'); grB.innerHTML = '';
+      art.grammar.forEach(function (g) {
+        var d = document.createElement('div'); d.className = 'gr-item';
+        d.innerHTML =
+          '<div><span class="gl-word">' + esc(g.point || '') + '</span>' +
+          (g.reading ? '<span class="gl-read">' + esc(g.reading) + '</span>' : '') + '</div>' +
+          '<div>' + esc(g.zh || '') + '</div>' +
+          (g.example ? '<div class="gl-ex">📌 ' + esc(g.example) + '</div>' : '') +
+          (g.exZh ? '<div class="gl-ex">→ ' + esc(g.exZh) + '</div>' : '');
+        var add = document.createElement('button'); add.className = 'btn small soft'; add.style.marginTop = '6px';
+        var already = isMarked(g.point, g.reading);
+        add.textContent = already ? '✓ ノート済' : '➕ ノートへ'; add.disabled = already;
+        add.onclick = function () {
+          add.disabled = true; add.textContent = '追加中…';
+          saveToNote('grammar', g.point, g.reading, '文法', g.zh, g.example, function(ok){
+            add.textContent = ok ? '✓ ノート済' : '➕ ノートへ'; add.disabled = ok;
+          });
+        };
+        d.appendChild(add);
+        grB.appendChild(d);
+      });
+    } else { $('grammarCard').classList.add('hidden'); }
+
+    renderQuiz();
+  }
+
+  function saveToNote(type, word, reading, pos, zh, example, cb) {
+    api('saveVocab', {
+      type: type, word: word, reading: reading || '', pos: pos || '', zh: zh || '',
+      example: example || '', source: (state.article && state.article.title) || '', status: 'new'
+    }).then(function () {
+      addMarkedLocal(word, reading);
+      // 更新文章中同詞的底色
+      document.querySelectorAll('#artBody .w').forEach(function(sp){
+        if ((sp.textContent || '').replace(/\s/g,'').indexOf(word) === 0) sp.classList.add('marked');
+      });
+      toast('ノートに追加 📓'); cb && cb(true);
+    }).catch(function (e) { toast('追加失敗：' + e.message); cb && cb(false); });
+  }
+
+  // 點字彈窗
+  function openWordSheet(tok, sentence, spanEl) {
+    var word = tok.s, reading = tok.r || '';
+    var bg = document.createElement('div'); bg.className = 'sheet-bg';
+    bg.onclick = function (e) { if (e.target === bg) document.body.removeChild(bg); };
+    var sheet = document.createElement('div'); sheet.className = 'sheet';
+    sheet.innerHTML = '<h3>' + esc(word) + '</h3><div id="wsBody"><div class="loading"><span class="spin"></span>調べ中…</div></div>';
+    bg.appendChild(sheet); document.body.appendChild(bg);
+
+    function fill(info) {
+      var rd = info.reading || reading;
+      var marked = isMarked(word, rd);
+      $('wsBody').innerHTML =
+        (rd ? '<div class="read">' + esc(rd) + '</div>' : '') +
+        '<div class="gl-pos" style="margin-left:0">' + esc(info.pos || tok.p || '') + '</div>' +
+        '<div class="zh">' + esc(info.zh || tok.zh || '(不明)') + '</div>' +
+        (info.example ? '<div class="gl-ex">' + esc(info.example) + '</div>' : '') +
+        (info.note ? '<div class="hint" style="margin-top:6px">💡 ' + esc(info.note) + '</div>' : '') +
+        '<button class="btn ' + (marked ? 'soft' : 'green') + '" id="markBtn" ' + (marked ? 'disabled' : '') + '>' +
+        (marked ? '✓ ノートにある' : '➕ 分からない → ノートへ') + '</button>' +
+        '<button class="btn ghost" id="wsClose">閉じる</button>';
+      $('wsClose').onclick = function () { document.body.removeChild(bg); };
+      if (!marked) $('markBtn').onclick = function () {
+        $('markBtn').disabled = true; $('markBtn').textContent = '追加中…';
+        saveToNote('word', word, rd, info.pos || tok.p || '', info.zh || tok.zh || '', info.example || '', function (ok) {
+          if (ok) { if (spanEl) spanEl.classList.add('marked'); $('markBtn').textContent = '✓ 追加済'; $('markBtn').className = 'btn soft'; }
+          else { $('markBtn').disabled = false; $('markBtn').textContent = '➕ 分からない → ノートへ'; }
+        });
+      };
+    }
+
+    // token 自帶 zh → 直接顯示，省一次 API
+    if (tok.zh) { fill({ reading: reading, pos: tok.p, zh: tok.zh }); return; }
+    var cacheKey = mkey(word, reading);
+    if (state.wordCache[cacheKey]) { fill(state.wordCache[cacheKey]); return; }
+    api('explainWord', { word: word, sentence: sentence })
+      .then(function (info) {
+        state.wordCache[cacheKey] = info;
+        localStorage.setItem(LS.cache, JSON.stringify(state.wordCache));
+        fill(info);
+      })
+      .catch(function (e) { $('wsBody').innerHTML = '<div class="err">調べ失敗：' + esc(e.message) + '</div>' +
+        '<button class="btn ghost" onclick="this.parentNode.parentNode.parentNode.remove()">閉じる</button>'; });
+  }
+
+  // 測驗
+  function renderQuiz() {
+    var quiz = (state.article && state.article.quiz) || [];
+    var box = $('quizBox'); box.innerHTML = ''; $('quizResult').innerHTML = '';
+    $('submitQuizBtn').disabled = false;
+    quiz.forEach(function (q, qi) {
+      var d = document.createElement('div'); d.className = 'q'; d.dataset.qi = qi;
+      var html = '<div class="q-text">' + (q.type ? '<span class="q-type">' + esc(q.type) + '</span>' : '') +
+        (qi + 1) + '. ' + esc(q.q) + '</div>';
+      (q.options || []).forEach(function (opt, oi) {
+        html += '<label class="opt"><input type="radio" name="q' + qi + '" value="' + oi + '">' +
+          '<span>' + String.fromCharCode(65 + oi) + '. ' + esc(opt) + '</span></label>';
+      });
+      d.innerHTML = html; box.appendChild(d);
+    });
+  }
+
+  $('submitQuizBtn').onclick = async function () {
+    var quiz = (state.article && state.article.quiz) || [];
+    if (!quiz.length) return;
+    var score = 0;
+    quiz.forEach(function (q, qi) {
+      var chosen = -1;
+      var sel = document.querySelector('input[name="q' + qi + '"]:checked');
+      if (sel) chosen = +sel.value;
+      var qDiv = document.querySelector('.q[data-qi="' + qi + '"]');
+      qDiv.querySelectorAll('.opt').forEach(function (o, oi) {
+        o.classList.remove('correct', 'wrong');
+        if (oi === q.answer) o.classList.add('correct');
+        else if (oi === chosen) o.classList.add('wrong');
+      });
+      if (chosen === q.answer) score++;
+      if (q.zh && !qDiv.querySelector('.explain')) {
+        var ex = document.createElement('div'); ex.className = 'explain';
+        ex.innerHTML = '<b>解析：</b>' + esc(q.zh); qDiv.appendChild(ex);
+      }
+    });
+    $('submitQuizBtn').disabled = true;
+    $('quizResult').innerHTML = '<div class="card" style="background:var(--soft-blue);text-align:center">' +
+      '<b style="font-size:1.2rem">スコア ' + score + ' / ' + quiz.length + '</b></div>';
+    try {
+      await api('saveReadingLog', { topic: state.article.topic || '', title: state.article.title || '', score: score, total: quiz.length });
+      await api('checkIn', { done: true }); loadChecks();
+    } catch (e) { /* 靜默 */ }
+  };
+
+  // ---- ノート ----
+  async function loadVocab() {
+    var box = $('vocabList');
+    box.innerHTML = '<div class="loading"><span class="spin"></span>読込中…</div>';
+    try {
+      var d = await api('loadVocab', {});
+      var words = d.words || [];
+      state.marked = {};
+      words.forEach(function (w) { state.marked[mkey(w.word, w.reading)] = true; });
+
+      if (!words.length) { box.innerHTML = '<p class="hint" style="text-align:center">まだ項目がありません。読解中に「分からない」でここに貯まります。</p>'; return; }
+      box.innerHTML = '';
+      words.reverse().forEach(function (w) {
+        var known = w.status === 'known';
+        var isG = w.type === 'grammar';
+        var entry = document.createElement('div'); entry.className = 'vocab-entry';
+
+        var row = document.createElement('div'); row.className = 'vocab-row';
+        row.innerHTML =
+          '<div class="vocab-main">' +
+          '<span class="type-badge ' + (isG ? 'type-grammar' : 'type-word') + '">' + (isG ? '文法' : '単語') + '</span>' +
+          '<span class="vocab-word">' + esc(w.word) + '</span> ' +
+          (w.reading ? '<span class="gl-read">' + esc(w.reading) + '</span>'
+                     : '<span class="gl-read rd-hint">（読み未設定）</span>') +
+          '<div class="vocab-zh">' + esc(w.zh || '') + '</div></div>';
+
+        var edBtn = document.createElement('button'); edBtn.className = 'btn small ghost';
+        edBtn.textContent = '✏️'; edBtn.title = '読みを追加/修正';
+        var tag = document.createElement('span'); tag.className = 'status-tag ' + (known ? 'status-known' : 'status-new');
+        tag.textContent = known ? '習得' : '要復習';
+        var stBtn = document.createElement('button'); stBtn.className = 'btn small ' + (known ? 'ghost' : 'soft');
+        stBtn.textContent = known ? '要復習に' : '習得に';
+        row.appendChild(edBtn); row.appendChild(tag); row.appendChild(stBtn);
+        entry.appendChild(row);
+
+        // 読みエディタ（行内・預設隱藏）
+        var ed = document.createElement('div'); ed.className = 'reading-edit hidden';
+        var inp = document.createElement('input'); inp.className = 'rd-input';
+        inp.placeholder = '読み（ひらがな）'; inp.value = w.reading || '';
+        var save = document.createElement('button'); save.className = 'btn small'; save.textContent = '保存';
+        ed.appendChild(inp); ed.appendChild(save);
+        entry.appendChild(ed);
+        box.appendChild(entry);
+
+        stBtn.onclick = async function () {
+          var newStatus = known ? 'new' : 'known'; stBtn.disabled = true;
+          try { await api('updateVocab', { type: w.type, word: w.word, reading: w.reading, status: newStatus }); loadVocab(); }
+          catch (e) { stBtn.disabled = false; toast('更新失敗'); }
+        };
+        edBtn.onclick = function () {
+          ed.classList.toggle('hidden');
+          if (!ed.classList.contains('hidden')) inp.focus();
+        };
+        save.onclick = async function () {
+          var nv = inp.value.trim(); save.disabled = true;
+          try {
+            await api('setReading', { type: w.type, word: w.word, oldReading: w.reading || '', reading: nv });
+            toast('読みを更新 ✓'); loadVocab();
+          } catch (e) { save.disabled = false; toast('更新失敗：' + e.message); }
+        };
+      });
+    } catch (e) { box.innerHTML = '<div class="err">読込失敗：' + esc(e.message) + '</div>'; }
+  }
+  $('reloadVocabBtn').onclick = loadVocab;
+
+  // 復習テスト
+  $('startReviewBtn').onclick = async function () {
+    var rb = $('reviewBox');
+    rb.innerHTML = '<div class="loading"><span class="spin"></span>出題中…</div>';
+    $('startReviewBtn').disabled = true;
+    try {
+      var d = await api('loadVocab', {});
+      var toStudy = (d.words || []).filter(function (w){ return w.status !== 'known'; })
+        .map(function (w){ return { word: w.word, reading: w.reading, zh: w.zh, type: w.type }; });
+      if (!toStudy.length) { rb.innerHTML = '<p class="hint">「要復習」の項目がありません。読解で集めましょう！</p>'; return; }
+      var q = await api('makeQuiz', { words: toStudy });
+      renderReview(q.quiz || []);
+    } catch (e) { rb.innerHTML = '<div class="err">出題失敗：' + esc(e.message) + '</div>'; }
+    finally { $('startReviewBtn').disabled = false; }
+  };
+
+  function renderReview(quiz) {
+    var rb = $('reviewBox');
+    if (!quiz.length) { rb.innerHTML = '<p class="hint">問題なし</p>'; return; }
+    rb.innerHTML = '';
+    quiz.forEach(function (q, qi) {
+      var d = document.createElement('div'); d.className = 'q'; d.dataset.qi = qi;
+      var html = '<div class="q-text">' + (qi + 1) + '. ' + esc(q.q) + '</div>';
+      (q.options || []).forEach(function (opt, oi) {
+        html += '<label class="opt"><input type="radio" name="rq' + qi + '" value="' + oi + '">' +
+          '<span>' + String.fromCharCode(65 + oi) + '. ' + esc(opt) + '</span></label>';
+      });
+      d.innerHTML = html; rb.appendChild(d);
+    });
+    var btn = document.createElement('button'); btn.className = 'btn green'; btn.textContent = '✅ 答え合わせ';
+    btn.onclick = function () {
+      var score = 0;
+      quiz.forEach(function (q, qi) {
+        var sel = document.querySelector('input[name="rq' + qi + '"]:checked');
+        var chosen = sel ? +sel.value : -1;
+        var qDiv = rb.querySelector('.q[data-qi="' + qi + '"]');
+        qDiv.querySelectorAll('.opt').forEach(function (o, oi) {
+          if (oi === q.answer) o.classList.add('correct');
+          else if (oi === chosen) o.classList.add('wrong');
+        });
+        if (chosen === q.answer) score++;
+      });
+      btn.disabled = true;
+      var res = document.createElement('div'); res.className = 'card';
+      res.style.cssText = 'background:var(--soft-blue);text-align:center';
+      res.innerHTML = '<b style="font-size:1.2rem">正解 ' + score + ' / ' + quiz.length + '</b>';
+      rb.appendChild(res);
+    };
+    rb.appendChild(btn);
+  }
+
+  // ---- 啟動 ----
+  if (state.article) renderReader();
+  if (!state.url) $('urlBox').classList.remove('hidden');
+  loadChecks();
+})();
+</script>
+</body>
+</html>

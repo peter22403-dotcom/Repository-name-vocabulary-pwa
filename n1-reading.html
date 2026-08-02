@@ -792,46 +792,24 @@
           '<div class="vocab-main">' +
           '<span class="type-badge ' + (isG ? 'type-grammar' : 'type-word') + '">' + (isG ? '文法' : '単語') + '</span>' +
           '<span class="vocab-word">' + esc(w.word) + '</span> ' +
-          (w.reading ? '<span class="gl-read">' + esc(w.reading) + '</span>'
-                     : '<span class="gl-read rd-hint">（読み未設定）</span>') +
+          (w.reading ? '<span class="gl-read">' + esc(w.reading) + '</span>' : '') +
           '<div class="vocab-zh">' + esc(w.zh || '') + '</div></div>';
 
         var pBtn = document.createElement('button'); pBtn.className = 'btn small soft';
         pBtn.textContent = '🔊'; pBtn.title = '発音を聞く';
         pBtn.onclick = function () { speak(w.reading || w.word); };
-        var edBtn = document.createElement('button'); edBtn.className = 'btn small ghost';
-        edBtn.textContent = '✏️'; edBtn.title = '読みを追加/修正';
         var tag = document.createElement('span'); tag.className = 'status-tag ' + (known ? 'status-known' : 'status-new');
         tag.textContent = known ? '習得' : '要復習';
         var stBtn = document.createElement('button'); stBtn.className = 'btn small ' + (known ? 'ghost' : 'soft');
         stBtn.textContent = known ? '要復習に' : '習得に';
-        row.appendChild(pBtn); row.appendChild(edBtn); row.appendChild(tag); row.appendChild(stBtn);
+        row.appendChild(pBtn); row.appendChild(tag); row.appendChild(stBtn);
         entry.appendChild(row);
-
-        // 読みエディタ（行内・預設隱藏）
-        var ed = document.createElement('div'); ed.className = 'reading-edit hidden';
-        var inp = document.createElement('input'); inp.className = 'rd-input';
-        inp.placeholder = '読み（ひらがな）'; inp.value = w.reading || '';
-        var save = document.createElement('button'); save.className = 'btn small'; save.textContent = '保存';
-        ed.appendChild(inp); ed.appendChild(save);
-        entry.appendChild(ed);
         box.appendChild(entry);
 
         stBtn.onclick = async function () {
           var newStatus = known ? 'new' : 'known'; stBtn.disabled = true;
           try { await api('updateVocab', { type: w.type, word: w.word, reading: w.reading, status: newStatus }); loadVocab(); }
           catch (e) { stBtn.disabled = false; toast('更新失敗'); }
-        };
-        edBtn.onclick = function () {
-          ed.classList.toggle('hidden');
-          if (!ed.classList.contains('hidden')) inp.focus();
-        };
-        save.onclick = async function () {
-          var nv = inp.value.trim(); save.disabled = true;
-          try {
-            await api('setReading', { type: w.type, word: w.word, oldReading: w.reading || '', reading: nv });
-            toast('読みを更新 ✓'); loadVocab();
-          } catch (e) { save.disabled = false; toast('更新失敗：' + e.message); }
         };
       });
     } catch (e) { box.innerHTML = '<div class="err">読込失敗：' + esc(e.message) + '</div>'; }

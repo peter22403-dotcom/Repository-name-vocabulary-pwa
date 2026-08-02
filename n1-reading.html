@@ -317,6 +317,32 @@
   }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
+  // 母語者發音（iOS/Safari 內建日文語音，離線、免費）
+  var _jaVoice = null;
+  function pickJaVoice() {
+    if (!('speechSynthesis' in window)) return;
+    var vs = speechSynthesis.getVoices() || [];
+    _jaVoice = vs.filter(function (v){ return /ja([-_]JP)?/i.test(v.lang) || /japan|日本/i.test(v.name); })
+      .sort(function (a,b){ return (/kyoko|siri|premium|enhanced/i.test(b.name)?1:0) - (/kyoko|siri|premium|enhanced/i.test(a.name)?1:0); })[0] || null;
+  }
+  if ('speechSynthesis' in window) {
+    pickJaVoice();
+    speechSynthesis.onvoiceschanged = pickJaVoice;
+  }
+  function speak(text) {
+    text = String(text || '').trim();
+    if (!text) return;
+    if (!('speechSynthesis' in window)) { toast('この端末は音声読み上げに未対応'); return; }
+    try {
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ja-JP'; u.rate = 0.9; u.pitch = 1.0;
+      if (!_jaVoice) pickJaVoice();
+      if (_jaVoice) u.voice = _jaVoice;
+      speechSynthesis.speak(u);
+    } catch (e) { toast('読み上げに失敗'); }
+  }
+
   // 有沒有假名/漢字/字母/數字 → 可點
   function isText(s){ return /[぀-ヿ㐀-鿿豈-﫿A-Za-z0-9０-９]/.test(s || ''); }
   // 有沒有漢字 → 需要 ruby
@@ -669,9 +695,11 @@
         '<div class="zh">' + esc(info.zh || tok.zh || '(不明)') + '</div>' +
         (info.example ? '<div class="gl-ex">' + esc(info.example) + '</div>' : '') +
         (info.note ? '<div class="hint" style="margin-top:6px">💡 ' + esc(info.note) + '</div>' : '') +
+        '<button class="btn soft" id="wsPlay">🔊 発音を聞く</button>' +
         '<button class="btn ' + (marked ? 'soft' : 'green') + '" id="markBtn" ' + (marked ? 'disabled' : '') + '>' +
         (marked ? '✓ ノートにある' : '➕ 分からない → ノートへ') + '</button>' +
         '<button class="btn ghost" id="wsClose">閉じる</button>';
+      $('wsPlay').onclick = function () { speak(rd || word); };
       $('wsClose').onclick = function () { document.body.removeChild(bg); };
       if (!marked) $('markBtn').onclick = function () {
         $('markBtn').disabled = true; $('markBtn').textContent = '追加中…';
@@ -768,13 +796,16 @@
                      : '<span class="gl-read rd-hint">（読み未設定）</span>') +
           '<div class="vocab-zh">' + esc(w.zh || '') + '</div></div>';
 
+        var pBtn = document.createElement('button'); pBtn.className = 'btn small soft';
+        pBtn.textContent = '🔊'; pBtn.title = '発音を聞く';
+        pBtn.onclick = function () { speak(w.reading || w.word); };
         var edBtn = document.createElement('button'); edBtn.className = 'btn small ghost';
         edBtn.textContent = '✏️'; edBtn.title = '読みを追加/修正';
         var tag = document.createElement('span'); tag.className = 'status-tag ' + (known ? 'status-known' : 'status-new');
         tag.textContent = known ? '習得' : '要復習';
         var stBtn = document.createElement('button'); stBtn.className = 'btn small ' + (known ? 'ghost' : 'soft');
         stBtn.textContent = known ? '要復習に' : '習得に';
-        row.appendChild(edBtn); row.appendChild(tag); row.appendChild(stBtn);
+        row.appendChild(pBtn); row.appendChild(edBtn); row.appendChild(tag); row.appendChild(stBtn);
         entry.appendChild(row);
 
         // 読みエディタ（行内・預設隱藏）

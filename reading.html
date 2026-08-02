@@ -94,6 +94,9 @@
     .vocab-row:first-child { border-top: none; }
     .vocab-main { flex: 1; min-width: 0; }
     .vocab-word { font-weight: 800; }
+    .spk-btn { flex: 0 0 auto; background: var(--soft-blue); border: none; border-radius: 10px; font-size: 1.1rem; width: 40px; height: 40px; cursor: pointer; }
+    .spk-btn:active { background: #d7e6ff; }
+    .sheet h3 .spk-btn { width: 38px; height: 38px; vertical-align: middle; margin-left: 6px; }
     .vocab-zh { color: var(--muted); font-size: .92rem; }
     .status-tag { font-size: .78rem; font-weight: 800; border-radius: 999px; padding: 2px 9px; }
     .status-new { background: var(--soft-amber); color: var(--amber); }
@@ -266,6 +269,18 @@
     clearTimeout(t._t); t._t = setTimeout(function(){ t.classList.remove('show'); }, 1900);
   }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  // 去掉 AI 選項自帶的「A. / (B) / C、」等開頭標籤，避免和我們加的字母重複
+  function stripLabel(s){ return String(s==null?'':s).replace(/^\s*[（(]?[A-Da-d][)）.．、:：]\s*/, ''); }
+  // 英語發音（瀏覽器內建語音，免後端）
+  function speak(text){
+    try {
+      if (!('speechSynthesis' in window)) { toast('這台裝置不支援發音'); return; }
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US'; u.rate = 0.9;
+      window.speechSynthesis.speak(u);
+    } catch (e) { toast('發音失敗'); }
+  }
 
   // ---- 後端 API ----
   async function api(action, payload) {
@@ -512,8 +527,9 @@
     var bg = document.createElement('div'); bg.className = 'sheet-bg';
     bg.onclick = function (e) { if (e.target === bg) document.body.removeChild(bg); };
     var sheet = document.createElement('div'); sheet.className = 'sheet';
-    sheet.innerHTML = '<h3>' + esc(word) + '</h3><div id="wsBody"><div class="loading"><span class="spin"></span>查詢中…</div></div>';
+    sheet.innerHTML = '<h3>' + esc(word) + '<button class="spk-btn" id="wsSpk" title="發音">🔊</button></h3><div id="wsBody"><div class="loading"><span class="spin"></span>查詢中…</div></div>';
     bg.appendChild(sheet); document.body.appendChild(bg);
+    $('wsSpk').onclick = function () { speak(word); };
 
     function fill(info) {
       var marked = isMarked(word);
@@ -565,7 +581,7 @@
       var html = '<div class="q-text">' + (qi + 1) + '. ' + esc(q.q) + '</div>';
       (q.options || []).forEach(function (opt, oi) {
         html += '<label class="opt"><input type="radio" name="q' + qi + '" value="' + oi + '">' +
-          '<span>' + String.fromCharCode(65 + oi) + '. ' + esc(opt) + '</span></label>';
+          '<span>' + String.fromCharCode(65 + oi) + '. ' + esc(stripLabel(opt)) + '</span></label>';
       });
       d.innerHTML = html;
       box.appendChild(d);
@@ -624,12 +640,14 @@
         var row = document.createElement('div'); row.className = 'vocab-row';
         var known = w.status === 'known';
         row.innerHTML =
+          '<button class="spk-btn" title="發音" aria-label="發音">🔊</button>' +
           '<div class="vocab-main"><span class="vocab-word">' + esc(w.word) + '</span> ' +
           '<span class="gl-pos">' + esc(w.pos || '') + '</span>' +
           '<div class="vocab-zh">' + esc(w.zh || '') + '</div></div>' +
           '<span class="status-tag ' + (known ? 'status-known' : 'status-new') + '">' + (known ? '已熟' : '要背') + '</span>' +
           '<button class="btn small ' + (known ? 'ghost' : 'soft') + '">' + (known ? '設為要背' : '標為已熟') + '</button>';
-        var btn = row.querySelector('button');
+        row.querySelector('.spk-btn').onclick = function () { speak(w.word); };
+        var btn = row.querySelector('.btn');
         btn.onclick = async function () {
           var newStatus = known ? 'new' : 'known';
           btn.disabled = true;
@@ -669,7 +687,7 @@
       var html = '<div class="q-text">' + (qi + 1) + '. ' + esc(q.q) + '</div>';
       (q.options || []).forEach(function (opt, oi) {
         html += '<label class="opt"><input type="radio" name="rq' + qi + '" value="' + oi + '">' +
-          '<span>' + String.fromCharCode(65 + oi) + '. ' + esc(opt) + '</span></label>';
+          '<span>' + String.fromCharCode(65 + oi) + '. ' + esc(stripLabel(opt)) + '</span></label>';
       });
       d.innerHTML = html; rb.appendChild(d);
     });

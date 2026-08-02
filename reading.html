@@ -205,6 +205,7 @@
       <div id="readerBox" class="hidden">
         <div class="card">
           <div class="article-title" id="artTitle"></div>
+          <button class="btn small soft" id="readAloudBtn" type="button" style="margin-bottom:8px">🔊 朗讀全文</button>
           <p class="hint">💡 點任何一個字看中文意思；覺得「這個字我不會」就在彈出視窗按「加入生字本」，字會變黃色。</p>
           <div class="article" id="artBody"></div>
         </div>
@@ -280,6 +281,23 @@
       u.lang = 'en-US'; u.rate = 0.9;
       window.speechSynthesis.speak(u);
     } catch (e) { toast('發音失敗'); }
+  }
+  // 朗讀全文（可停止）
+  function setupReadAloud(art) {
+    var btn = $('readAloudBtn'); if (!btn) return;
+    var text = (art.article || '').replace(/\n+/g, '. ');
+    function reset() { btn.textContent = '🔊 朗讀全文'; btn.classList.remove('green'); btn.classList.add('soft'); }
+    reset();
+    btn.onclick = function () {
+      if (!('speechSynthesis' in window)) { toast('這台裝置不支援朗讀'); return; }
+      if (window.speechSynthesis.speaking) { window.speechSynthesis.cancel(); reset(); return; }
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US'; u.rate = 0.9;
+      u.onend = reset; u.onerror = reset;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+      btn.textContent = '⏹ 停止朗讀'; btn.classList.remove('soft'); btn.classList.add('green');
+    };
   }
 
   // ---- 後端 API ----
@@ -440,6 +458,7 @@
     $('readerEmpty').classList.add('hidden');
     $('readerBox').classList.remove('hidden');
     $('artTitle').textContent = art.title || '(未命名)';
+    setupReadAloud(art);
 
     // glossary 對照表（原型 -> 資料）
     var glMap = {};
